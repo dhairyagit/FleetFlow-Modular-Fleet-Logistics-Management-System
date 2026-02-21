@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - FleetFlow{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Command Center</h1>
+    <p class="text-gray-600 dark:text-gray-400">Real-time fleet operations overview</p>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Active Fleet</div>
+        <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ active_fleet }}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">On Trip</div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Maintenance Alerts</div>
+        <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{{ maintenance_alerts }}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">In Shop</div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Fleet Utilization</div>
+        <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ fleet_utilization }}%</div>
+        <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">Current Rate</div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Pending Cargo</div>
+        <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ pending_cargo }}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">Draft Trips</div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Monthly Cost</div>
+        <div class="text-3xl font-bold text-red-600 dark:text-red-400">₹{{ total_cost }}</div>
+        <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">Operational</div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid grid-cols-1 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Live Vehicle Tracking</h2>
+        <div id="map" style="height: 400px; width: 100%; border-radius: 8px;"></div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid grid-cols-1 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Weekly Fleet Utilization</h2>
+        <div style="position: relative; height: 300px; width: 100%;">
+            <canvas id="utilizationChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Vehicle Status Breakdown -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Vehicle Status</h2>
+        <div class="space-y-2">
+            {% for stat in vehicle_stats %}
+            <div class="flex justify-between items-center">
+                <span class="flex items-center text-gray-700 dark:text-white">
+                    <span class="w-3 h-3 rounded-full mr-2 
+                        {% if stat.status == 'AVAILABLE' %}bg-green-500
+                        {% elif stat.status == 'ON_TRIP' %}bg-blue-500
+                        {% elif stat.status == 'IN_SHOP' %}bg-yellow-500
+                        {% elif stat.status == 'SUSPENDED' %}bg-red-500
+                        {% else %}bg-gray-500{% endif %}">
+                    </span>
+                    {% if stat.status == 'AVAILABLE' %}Available
+                    {% elif stat.status == 'ON_TRIP' %}On Trip
+                    {% elif stat.status == 'IN_SHOP' %}In Shop
+                    {% elif stat.status == 'SUSPENDED' %}Suspended
+                    {% else %}{{ stat.status }}{% endif %}
+                </span>
+                <span class="font-bold text-gray-900 dark:text-white">{{ stat.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Recent Trips</h2>
+        <div class="space-y-3">
+            {% for trip in recent_trips %}
+            <div class="border-l-4 pl-3 
+                {% if trip.status == 'COMPLETED' %}border-green-500
+                {% elif trip.status == 'DISPATCHED' %}border-blue-500
+                {% elif trip.status == 'DRAFT' %}border-gray-500
+                {% else %}border-red-500{% endif %}">
+                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ trip.source }} → {{ trip.destination }}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400">{{ trip.vehicle.name }} • {{ trip.driver.name }}</div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 dark:text-gray-400 text-sm">No recent trips</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const isDark = document.documentElement.classList.contains('dark');
+const textColor = isDark ? '#ffffff' : '#1f2937';
+const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+// Initialize Leaflet Map
+const map = L.map('map').setView([28.6139, 77.2090], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+const vehicles = {{ vehicles_tracking|safe }};
+const statusColors = {
+    'AVAILABLE': '#10b981',
+    'ON_TRIP': '#3b82f6',
+    'IN_SHOP': '#f59e0b',
+    'SUSPENDED': '#ef4444'
+};
+
+vehicles.forEach(v => {
+    if (v.lat && v.lng) {
+        L.circleMarker([v.lat, v.lng], {
+            radius: 8,
+            fillColor: statusColors[v.status] || '#6b7280',
+            color: '#fff',
+            weight: 2,
+            fillOpacity: 0.8
+        }).addTo(map).bindPopup(`<b>${v.name}</b><br>${v.plate}<br><span style="color:${statusColors[v.status]}">${v.status_display}</span>`);
+    }
+});
+
+// Utilization Chart
+const ctx = document.getElementById('utilizationChart');
+if (ctx) {
+    new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+        datasets: [{
+            label: 'Utilization %',
+            data: [65, 72, 68, 75, 70, 45, 40],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.3,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: '#3b82f6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: { 
+                    color: textColor,
+                    callback: value => value + '%'
+                },
+                grid: { color: gridColor }
+            },
+            x: {
+                ticks: { color: textColor },
+                grid: { display: false }
+            }
+        },
+        plugins: {
+            legend: { 
+                display: true,
+                labels: { color: textColor }
+            }
+        }
+    }
+});
+}
+</script>
+{% endblock %}

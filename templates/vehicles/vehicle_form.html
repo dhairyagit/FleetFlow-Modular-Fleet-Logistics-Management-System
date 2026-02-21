@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-4xl">
+    <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">{{ action }} Vehicle</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+                
+                {% for field in form %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-white mb-1">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
+                        Save
+                    </button>
+                    <a href="{% url 'vehicle_list' %}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+            <h3 class="text-lg font-bold mb-4 text-gray-900 dark:text-white">Set Location on Map</h3>
+            <div id="locationMap" style="height: 400px; border-radius: 8px;"></div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Click on map to set vehicle location</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const lat = parseFloat('{{ form.latitude.value|default:"28.6139" }}');
+const lng = parseFloat('{{ form.longitude.value|default:"77.2090" }}');
+
+const locationMap = L.map('locationMap').setView([lat, lng], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(locationMap);
+
+let marker = L.marker([lat, lng], {draggable: true}).addTo(locationMap);
+
+function updateCoords(lat, lng) {
+    document.querySelector('[name="latitude"]').value = lat.toFixed(6);
+    document.querySelector('[name="longitude"]').value = lng.toFixed(6);
+}
+
+marker.on('dragend', function(e) {
+    const pos = marker.getLatLng();
+    updateCoords(pos.lat, pos.lng);
+});
+
+locationMap.on('click', function(e) {
+    marker.setLatLng(e.latlng);
+    updateCoords(e.latlng.lat, e.latlng.lng);
+});
+</script>
+
+<style>
+    .form-input, .form-select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        background: white;
+    }
+    .dark .form-input, .dark .form-select {
+        background: #1f2937;
+        border-color: #374151;
+        color: white;
+    }
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+    }
+</style>
+{% endblock %}

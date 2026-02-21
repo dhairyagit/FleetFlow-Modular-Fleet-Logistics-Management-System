@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Operational Analytics</h1>
+    <div class="space-x-2">
+        <a href="{% url 'export_csv' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Export CSV
+        </a>
+        <a href="{% url 'export_pdf' %}" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+            Export PDF
+        </a>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Fleet Utilization</div>
+        <div class="text-3xl font-bold text-blue-600 dark:text-blue-400">{{ fleet_utilization }}%</div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Fuel Efficiency</div>
+        <div class="text-3xl font-bold text-green-600 dark:text-green-400">{{ fuel_efficiency }} km/L</div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Cost per KM</div>
+        <div class="text-3xl font-bold text-orange-600 dark:text-orange-400">₹{{ cost_per_km }}</div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Distance</div>
+        <div class="text-3xl font-bold text-purple-600 dark:text-purple-400">{{ total_distance }} km</div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Top 5 Vehicle ROI</h2>
+        <div style="position: relative; height: 280px; width: 100%;">
+            <canvas id="roiChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">Cost Breakdown</h2>
+        <div style="position: relative; height: 280px; width: 100%;">
+            <canvas id="costChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Vehicle ROI Table -->
+<div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800 mb-8">
+    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Vehicle ROI Analysis</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-100 dark:bg-gray-800">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Vehicle</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Revenue</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Costs</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">ROI %</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y dark:divide-gray-800">
+                {% for item in vehicles_with_roi_table %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.vehicle.name }}</td>
+                    <td class="px-4 py-3 text-green-600 dark:text-green-400">₹{{ item.revenue|floatformat:2 }}</td>
+                    <td class="px-4 py-3 text-red-600 dark:text-red-400">₹{{ item.costs|floatformat:2 }}</td>
+                    <td class="px-4 py-3">
+                        <span class="font-bold {% if item.roi > 0 %}text-green-600 dark:text-green-400{% else %}text-red-600 dark:text-red-400{% endif %}">
+                            {{ item.roi }}%
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">No data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Driver Performance -->
+<div class="bg-white dark:bg-gray-900 p-6 rounded-lg shadow border dark:border-gray-800">
+    <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Driver Performance</h2>
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-100 dark:bg-gray-800">
+                <tr>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Driver</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Total Trips</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Completion Rate</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Safety Score</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y dark:divide-gray-800">
+                {% for item in drivers_performance %}
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.driver.name }}</td>
+                    <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.total_trips }}</td>
+                    <td class="px-4 py-3 text-gray-900 dark:text-white">{{ item.completion_rate }}%</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2 py-1 text-xs rounded 
+                            {% if item.safety_score >= 80 %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                            {% elif item.safety_score >= 60 %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300
+                            {% else %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300{% endif %}">
+                            {{ item.safety_score }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">No data available</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const isDark = document.documentElement.classList.contains('dark');
+const textColor = isDark ? '#ffffff' : '#1f2937';
+const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+// Parse ROI data safely
+let roiData = [];
+try {
+    const rawData = '{{ vehicles_with_roi|escapejs }}';
+    if (rawData && rawData !== '[]') {
+        roiData = JSON.parse(rawData);
+    }
+} catch(e) {
+    console.error('Error parsing ROI data:', e);
+}
+
+// ROI Bar Chart
+const roiCanvas = document.getElementById('roiChart');
+if (roiData && roiData.length > 0) {
+    const names = roiData.map(v => v.vehicle.name);
+    const values = roiData.map(v => v.roi);
+    
+    new Chart(roiCanvas, {
+        type: 'bar',
+        data: {
+            labels: names,
+            datasets: [{
+                label: 'ROI %',
+                data: values,
+                backgroundColor: values.map(v => v > 0 ? '#10b981' : '#ef4444'),
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { 
+                        color: textColor,
+                        callback: value => value + '%'
+                    },
+                    grid: { color: gridColor }
+                },
+                x: {
+                    ticks: { color: textColor, maxRotation: 45, minRotation: 45 },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+} else {
+    roiCanvas.parentElement.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-16">No vehicle data available</p>';
+}
+
+// Cost Breakdown Doughnut Chart
+const totalCost = {{ total_cost|default:0 }};
+const costCanvas = document.getElementById('costChart');
+
+if (totalCost > 0) {
+    new Chart(costCanvas, {
+        type: 'doughnut',
+        data: {
+            labels: ['Fuel Costs', 'Maintenance Costs'],
+            datasets: [{
+                data: [totalCost * 0.6, totalCost * 0.4],
+                backgroundColor: ['#f59e0b', '#ef4444'],
+                borderWidth: 2,
+                borderColor: isDark ? '#000' : '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { 
+                        color: textColor,
+                        padding: 10,
+                        font: { size: 11 }
+                    }
+                }
+            }
+        }
+    });
+} else {
+    costCanvas.parentElement.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400 py-16">No cost data available</p>';
+}
+</script>
+{% endblock %}

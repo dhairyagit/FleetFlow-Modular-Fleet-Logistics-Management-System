@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{% url 'vehicle_list' %}" class="text-blue-600 hover:underline">&larr; Back to Vehicles</a>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h1 class="text-3xl font-bold mb-4">{{ vehicle.name }}</h1>
+    
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <p class="text-sm text-gray-600">License Plate</p>
+            <p class="font-bold">{{ vehicle.license_plate }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Type</p>
+            <p class="font-bold">{{ vehicle.get_vehicle_type_display }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Max Capacity</p>
+            <p class="font-bold">{{ vehicle.max_capacity }} kg</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Status</p>
+            <p class="font-bold">{{ vehicle.get_status_display }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Odometer</p>
+            <p class="font-bold">{{ vehicle.odometer }} km</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">ROI</p>
+            <p class="font-bold">{{ vehicle.roi|floatformat:2 }}%</p>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-4">Recent Trips</h2>
+        {% for trip in trips %}
+        <div class="mb-2 text-sm">{{ trip.source }} → {{ trip.destination }}</div>
+        {% empty %}
+        <p class="text-gray-500 text-sm">No trips</p>
+        {% endfor %}
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-4">Maintenance Logs</h2>
+        {% for log in maintenance_logs %}
+        <div class="mb-2 text-sm">{{ log.get_service_type_display }} - ₹{{ log.cost }}</div>
+        {% empty %}
+        <p class="text-gray-500 text-sm">No maintenance</p>
+        {% endfor %}
+    </div>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-4">Fuel Logs</h2>
+        {% for log in fuel_logs %}
+        <div class="mb-2 text-sm">{{ log.liters }}L - ₹{{ log.fuel_cost }}</div>
+        {% empty %}
+        <p class="text-gray-500 text-sm">No fuel logs</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

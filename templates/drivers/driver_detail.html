@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{% url 'driver_list' %}" class="text-blue-600 hover:underline">&larr; Back to Drivers</a>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow mb-6">
+    <h1 class="text-3xl font-bold mb-4">{{ driver.name }}</h1>
+    
+    <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
+            <p class="text-sm text-gray-600">License Number</p>
+            <p class="font-bold">{{ driver.license_number }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Category</p>
+            <p class="font-bold">{{ driver.get_license_category_display }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">License Expiry</p>
+            <p class="font-bold {% if not driver.is_license_valid %}text-red-600{% endif %}">
+                {{ driver.license_expiry }}
+            </p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Status</p>
+            <p class="font-bold">{{ driver.get_status_display }}</p>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-3 gap-4 pt-4 border-t">
+        <div class="text-center">
+            <p class="text-2xl font-bold text-blue-600">{{ total_trips }}</p>
+            <p class="text-sm text-gray-600">Total Trips</p>
+        </div>
+        <div class="text-center">
+            <p class="text-2xl font-bold text-green-600">{{ completion_rate }}%</p>
+            <p class="text-sm text-gray-600">Completion Rate</p>
+        </div>
+        <div class="text-center">
+            <p class="text-2xl font-bold text-purple-600">{{ safety_score }}</p>
+            <p class="text-sm text-gray-600">Safety Score</p>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow">
+    <h2 class="text-xl font-bold mb-4">Recent Trips</h2>
+    {% for trip in trips %}
+    <div class="mb-2 border-l-4 border-blue-500 pl-3">
+        <p class="text-sm font-medium">{{ trip.source }} → {{ trip.destination }}</p>
+        <p class="text-xs text-gray-600">{{ trip.get_status_display }}</p>
+    </div>
+    {% empty %}
+    <p class="text-gray-500 text-sm">No trips</p>
+    {% endfor %}
+</div>
+{% endblock %}

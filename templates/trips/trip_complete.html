@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-md">
+    <h1 class="text-3xl font-bold mb-6">Complete Trip</h1>
+    
+    <div class="bg-white p-6 rounded-lg shadow">
+        <div class="mb-4">
+            <p class="text-sm text-gray-600">Trip</p>
+            <p class="font-bold">{{ trip.source }} → {{ trip.destination }}</p>
+        </div>
+        
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Distance Traveled (km)</label>
+                {{ form.distance_traveled }}
+            </div>
+            
+            <div class="bg-blue-50 p-3 text-sm">
+                <p>Completing this trip will:</p>
+                <ul class="list-disc list-inside mt-2">
+                    <li>Update vehicle odometer</li>
+                    <li>Set vehicle status to Available</li>
+                    <li>Set driver status to On Duty</li>
+                </ul>
+            </div>
+            
+            <div class="flex gap-4 pt-4">
+                <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                    Complete Trip
+                </button>
+                <a href="{% url 'trip_list' %}" class="bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400">
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+    }
+</style>
+{% endblock %}

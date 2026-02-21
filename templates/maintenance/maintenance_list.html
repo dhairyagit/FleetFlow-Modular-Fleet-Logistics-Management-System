@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Maintenance Logs</h1>
+    <div class="space-x-2">
+        <a href="{% url 'maintenance_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            + Add Maintenance
+        </a>
+        <a href="{% url 'fuel_list' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+            Fuel Logs
+        </a>
+        <a href="{% url 'expense_list' %}" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">
+            Expenses
+        </a>
+    </div>
+</div>
+
+<div class="bg-white dark:bg-gray-900 rounded-lg shadow border dark:border-gray-800 overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-100 dark:bg-gray-800">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Vehicle</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Service Type</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Cost</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y dark:divide-gray-800">
+            {% for log in maintenance_logs %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <td class="px-6 py-4 text-gray-900 dark:text-white">{{ log.vehicle.name }}</td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">{{ log.get_service_type_display }}</td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">₹{{ log.cost }}</td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">{{ log.date }}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 text-xs rounded 
+                        {% if log.status == 'COMPLETED' %}bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300
+                        {% elif log.status == 'IN_PROGRESS' %}bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300
+                        {% else %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300{% endif %}">
+                        {{ log.get_status_display }}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <a href="{% url 'maintenance_update' log.pk %}" class="text-green-600 dark:text-green-400 hover:underline text-sm">Edit</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No maintenance logs found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

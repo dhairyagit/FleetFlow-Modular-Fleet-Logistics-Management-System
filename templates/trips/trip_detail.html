@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{% url 'trip_list' %}" class="text-blue-600 hover:underline">&larr; Back to Trips</a>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow">
+    <h1 class="text-3xl font-bold mb-4">Trip #{{ trip.id }}</h1>
+    
+    <div class="grid grid-cols-2 gap-4">
+        <div>
+            <p class="text-sm text-gray-600">Vehicle</p>
+            <p class="font-bold">{{ trip.vehicle.name }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Driver</p>
+            <p class="font-bold">{{ trip.driver.name }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Source</p>
+            <p class="font-bold">{{ trip.source }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Destination</p>
+            <p class="font-bold">{{ trip.destination }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Cargo Weight</p>
+            <p class="font-bold">{{ trip.cargo_weight }} kg</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Revenue</p>
+            <p class="font-bold">₹{{ trip.revenue }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Status</p>
+            <p class="font-bold">{{ trip.get_status_display }}</p>
+        </div>
+        <div>
+            <p class="text-sm text-gray-600">Distance</p>
+            <p class="font-bold">{{ trip.distance }} km</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

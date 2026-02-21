@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Fuel Logs</h1>
+    <a href="{% url 'fuel_create' %}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        + Add Fuel Log
+    </a>
+</div>
+
+<div class="bg-white dark:bg-gray-900 rounded-lg shadow border dark:border-gray-800 overflow-hidden">
+    <table class="w-full">
+        <thead class="bg-gray-100 dark:bg-gray-800">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Vehicle</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Liters</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Cost</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Cost/L</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Date</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase">Odometer</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y dark:divide-gray-800">
+            {% for log in fuel_logs %}
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <td class="px-6 py-4 text-gray-900 dark:text-white">{{ log.vehicle.name }}</td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">{{ log.liters }} L</td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">₹{{ log.fuel_cost }}</td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">₹{{ log.cost_per_liter|floatformat:2 }}</td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">{{ log.date }}</td>
+                <td class="px-6 py-4 text-gray-900 dark:text-white">{{ log.odometer_reading }} km</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">No fuel logs found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
